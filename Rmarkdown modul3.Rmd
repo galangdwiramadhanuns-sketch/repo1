@@ -1,0 +1,108 @@
+---
+title: "SIM Modul 3"
+author: "Galang DR (M0725040)"
+date: "2026-03-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = TRUE,
+	warning = TRUE
+)
+```
+
+```{r loadlibrary}
+# Memuat paket yang diperlukan untuk koneksi database dan visualisasi
+library(DBI)
+library(ggplot2)
+library(scales)
+```
+# Pendahuluan
+Laporan ini menyajikan banyaknya item untuk tiap product scale dari database
+"classicmodels". Proses ini mengintegrasikan SQL untuk pengambilan data dan R untuk
+visualisasi.
+# Koneksi Database dan Pengambilan Data
+Langkah pertama adalah membangun koneksi antara RStudio dan database MySQL
+menggunakan fungsi dbConnect()
+```{r koneksidata}
+con <- DBI::dbConnect(odbc::odbc(),
+ Driver = "MySQL ODBC 8.0 ANSI Driver",
+ Server = "127.0.0.1",
+ Database = "classicmodels",
+ UID = "root",
+ PWD = "21gal09lang06MySQL", #sesuaikan dg password masing-masing
+ Port = 3306)
+```
+
+```{r kueri1}
+# Mendapatkan data yang diperlukan
+data1 <- dbGetQuery(con, "SELECT productScale,
+ COUNT(*) AS totalItems
+ FROM products
+GROUP BY productScale")
+data1
+```
+
+# Visualisasi banyaknya item tiap product scale
+Kita menggunakan library ggplot2 untuk membuat barchart. Fungsi geom_bar() digunakan
+untuk melihat banyaknya item tiap product scale.
+```{r barchart01}
+# Membuat barchart untuk banyaknya item tiap product scale
+ggplot(data1, aes(x = productScale, y = totalItems)) +
+ geom_bar(stat = "identity", fill = "blue", alpha = 1) +
+ theme_minimal() +
+ labs(title = "Total Item per Skala Produk",
+ x = "Skala Produk",
+ y = "Total Item") +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r kueri2}
+# Mendapatkan data yang diperlukan
+data2 <- dbGetQuery(con, "select o.orderNumber, country, sum(quantityordered*priceeach) total_value
+from orders o
+join orderdetails od on o.orderNumber=od.orderNumber
+join customers c on c.customerNumber=o.customerNumber
+where country in ('Denmark', 'Finland', 'Norwy', 'Sweden')
+group by o.orderNumber")
+data2
+```
+
+```{r histogram}
+# Membuat barchart untuk banyaknya item tiap product scale
+ggplot(data2, aes(x = total_value)) +
+ geom_histogram(aes(fill = after_stat(count), bins = 15, color = 'red')) +
+ stat_bin(bins = 15, geom="text",
+           aes(label=after_stat(count)), vjust=-0.5)+
+ theme_minimal() +
+ labs(title = "Distribusi nilai pesanan di negara nordic",
+ x = "Nilai pesanan",
+ y = "Banyak pesanan") +
+ theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

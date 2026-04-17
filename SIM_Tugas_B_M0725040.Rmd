@@ -1,0 +1,130 @@
+---
+title: "SIM_Tugas_B_M0725040"
+author: "Galang DR (M0725040)"
+date: "2026-04-17"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r}
+# CLUSTERING WILAYAH BERDASARKAN PERFORMA PRODUK
+
+# data
+library(openxlsx)
+Coffee_Chain_Datasets <- read.xlsx("C:/Users/User/OneDrive/Documents/UNS/SIM/Coffee_Chain_Datasets.xlsx")
+
+# package
+if(!require(rlang)) install.packages("rlang")
+
+if(!require(dplyr)) install.packages("dplyr")
+if(!require(tidyr)) install.packages("tidyr")
+if(!require(factoextra)) install.packages("factoextra")
+
+library(rlang)
+library(dplyr)
+library(tidyr)
+library(factoextra)
+
+# agregasi data
+data_cluster <- Coffee_Chain_Datasets %>%
+  group_by(State, `Product.Line`) %>%
+  summarise(total_laba = sum(Profit, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(names_from = `Product.Line`,
+              values_from = total_laba,
+              values_fill = 0)
+
+# 3. simpan nama state
+state_names <- data_cluster$State
+
+
+# hapus kolom state
+data_cluster <- data_cluster[, -1]
+
+# filter numerik
+data_cluster <- data_cluster[, sapply(data_cluster, is.numeric)]
+
+# struktur data
+cat("Dimensi data sebelum cleaning:", dim(data_cluster), "\n")
+print(head(data_cluster))
+
+# hapus variansi 0
+var_cols <- apply(data_cluster, 2, var)
+
+if(all(var_cols == 0)){
+  stop("SEMUA VARIABEL MEMILIKI VARIANSI NOL")
+}
+
+data_cluster <- data_cluster[, var_cols != 0, drop = FALSE]
+
+# transformasi
+data_cluster <- log1p(data_cluster)
+
+# cek nilai NA
+cat("Jumlah NA sebelum scaling:", sum(is.na(data_cluster)), "\n")
+
+# normalisasi
+data_scaled <- scale(data_cluster)
+
+# pastikan NA aman
+idx <- complete.cases(data_scaled)
+
+cat("Jumlah data valid:", sum(idx), "dari", length(idx), "\n")
+
+if(sum(idx) == 0){
+  stop("SEMUA DATA TERHAPUS KARENA NA - CEK DATA!")
+}
+
+data_scaled <- data_scaled[idx, , drop = FALSE]
+data_cluster <- data_cluster[idx, , drop = FALSE]
+state_names <- state_names[idx]
+
+# elbow methode
+n <- nrow(data_scaled)
+max_k <- min(10, n - 1)
+
+wss <- sapply(1:max_k, function(k){
+  kmeans(data_scaled, centers = k, nstart = 25)$tot.withinss
+})
+
+plot(1:max_k, wss, type="b", pch=19,
+     xlab="Jumlah Cluster",
+     ylab="Total Within Sum of Squares",
+     main="Elbow Method")
+
+# k-means clustering
+set.seed(123)
+
+k <- min(3, n - 1)
+kmeans_result <- kmeans(data_scaled, centers = k, nstart = 25)
+
+# hasil cluster
+hasil_cluster <- data.frame(
+  State = state_names,
+  data_cluster,
+  cluster = kmeans_result$cluster
+)
+
+print(hasil_cluster)
+
+# interpretasi cluster
+cluster_summary <- aggregate(data_cluster,
+                             by = list(cluster = kmeans_result$cluster),
+                             mean)
+
+print(cluster_summary)
+
+# visualisasi cluster
+fviz_cluster(kmeans_result,
+             data = data_scaled,
+             geom = "point",
+             repel = TRUE) +
+  labs(title = "Clustering State Berdasarkan Performa Produk")
+
+# analisis tambahan
+cat("\nDistribusi cluster:\n")
+print(table(hasil_cluster$cluster))
+
+cat("\nData per cluster:\n")
+print(hasil_cluster %>% arrange(cluster))
+```

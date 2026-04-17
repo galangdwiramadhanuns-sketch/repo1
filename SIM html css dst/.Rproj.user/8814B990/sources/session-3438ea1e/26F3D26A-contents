@@ -1,0 +1,257 @@
+---
+title: "SIM"
+author: "husnafanyn"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  word_document: default
+  html_document: default
+---
+
+<style>
+/* Penggunaan Internal CSS pada R-Markdown*/
+
+/* Mengatur font seluruh dokumen */
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+}
+
+/* Mengatur judul utama */
+.title {
+  text-align: center;
+  padding: 12px;
+  border-radius: 10px;
+  background-color:#072345;
+}
+
+/* Mengatur heading 1*/
+h1 {
+  color: white;
+  background-color: #2c7fb8;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+/* Mengatur heading 2*/
+h2 {
+  color: #2c7fb8;
+  border-bottom: 2px solid #2c7fb8;
+  padding-bottom: 5px;
+}
+
+/* Mengatur heading 3*/
+h3 {
+  color: #2c7fb8;
+  font-family: Arial, sans-serif;
+  border-left: 6px solid #2c7fb8;
+  padding-left: 10px;
+  margin-top: 25px;
+}
+
+/* Mengatur style link */
+a {
+  color: #1a73e8;
+  font-weight: bold;
+}
+
+/* Mengatur style tabel */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: Arial;
+}
+
+th {
+  background-color: #2c7fb8;
+  color: white;
+  padding: 10px;
+  text-align: center;
+}
+
+td {
+  padding: 8px;
+  border-bottom: 1px solid #dddddd;
+}
+
+tr:nth-child(even){
+  background-color: #f2f2f2;
+}
+
+tr:hover {
+  background-color: #d1ecf1;
+}
+
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+
+```{r loadlibrary, warning=FALSE}
+# Memuat paket yang diperlukan untuk visualisasi
+library(DBI)
+library(odbc)
+library(ggplot2)
+library(scales)
+```
+
+/* Penggunaan Inline CSS pada R-Markdown */
+<h1 style="color:white; background-color:#92b4de; padding:10px; border-radius:8px;">
+Pendahuluan
+</h1>
+
+# Penulisan Dengan Struktur Markdown
+Dokumen ini menyajikan hasil analisis data dengan memanfaatkan **R-Markdown** sebagai alat utama dalam pengolahan dan penyusunan laporan. Dengan integrasi **HTML**, tampilan laporan menjadi lebih _dinamis_ dan **fleksibel**, memungkinkan penyajian tabel, gambar, serta elemen interaktif yang tidak dapat dicapai hanya dengan Markdown biasa.
+
+Kombinasi kedua teknologi ini memberikan kemudahan dalam menyusun laporan yang tidak hanya **informatif**, tetapi juga lebih **profesional** dan mudah dibaca. Selain itu, penggunaan **CSS** dalam HTML semakin memperkaya estetika tampilan, menjadikan dokumen lebih menarik dan sesuai dengan standar penyajian visual yang baik.
+
+Dengan pendekatan ini, analisis data dapat dikomunikasikan secara lebih **jelas** dan **efektif** kepada pembaca.
+
+**Referensi tambahan:**
+
+🔗[Dokumentasi R-Markdown](https://rmarkdown.rstudio.com/)
+
+
+<h1>Penulisan Dengan tag html</h1>
+
+
+<p style="text-align:justify;">
+<strong>R-Markdown</strong> memberikan kemudahan dalam menyusun laporan berbasis data dengan struktur yang ringkas dan fleksibel.</p>
+
+
+<p style="text-align:justify;">
+Dengan dukungan <strong>HTML</strong>, pengguna dapat memperkaya tampilan dokumen menggunakan elemen seperti tabel, gambar, dan format teks yang lebih <em>variatif</em>.</p>
+
+
+<p style="text-align:justify;">
+Selain itu, integrasi dengan <strong>CSS</strong> memungkinkan personalisasi gaya agar laporan lebih <em>estetis</em> dan profesional, mulai dari pemilihan warna, font, hingga tata letak elemen.</p>
+
+
+<p style="text-align:justify;">
+Kombinasi ketiga teknologi ini membantu menyampaikan analisis data secara lebih <strong>jelas</strong> dan <strong>terstruktur</strong>, sehingga pembaca dapat memahami hasil dengan lebih mudah.</p>
+
+
+<p style="text-align:justify;">
+Dengan pendekatan ini, penyusunan laporan menjadi lebih <strong>efisien</strong> dan menarik tanpa mengorbankan keakuratan informasi yang disajikan.</p>
+
+
+<p>🔗 <a href="https://rmarkdown.rstudio.com/">Pelajari lebih lanjut tentang R-Markdown</a></p>
+
+# Data
+Proses ini mengintegrasikan **SQL** untuk pengambilan data dan **R** untuk visualisasi.
+
+## Koneksi Data
+Langkah pertama adalah membangun koneksi antara RStudio dan database MySQL menggunakan fungsi `dbConnect()`
+```{r Koneksi Data}
+
+con = dbConnect(odbc(),
+                 Driver = "MySQL ODBC 8.0 ANSI Driver",
+                 Server = "127.0.0.1",
+                 UID = "root",
+                 PWD = "21gal09lang06MySQL",
+                 Port = 3306,
+                 database = "classicmodels")
+
+
+
+```
+
+
+## Ambil Data
+Setelah koneksi terjalin, kita menggunakan blok kode SQL untuk mendapatkan data nilai pesanan di negara Nordic. Simpan data hasil kueri data dalam suatu data frame R.
+```{r Ambil Data}
+query <- "SELECT o.ordernumber, country, sum(quantityordered*priceeach) as total_value
+FROM orders o
+JOIN orderdetails od ON o.orderNumber=od.orderNumber
+JOIN customers c ON o.customerNumber=c.customerNumber
+WHERE country IN ('Denmark', 'Finland', 'Norway', 'Sweden')
+GROUP BY o.orderNumber"
+
+data <- dbGetQuery(con, query)
+```
+
+
+## Ringkasan Data
+Ringkasan data merupakan ringkasan statistik deskriptif dari data, seperti nilai minimum, kuartil pertama, median, mean (rata-rata), kuartil ketiga, dan maksimum untuk data numerik, serta hitungan kategori untuk data faktor. 
+
+```{r data}
+knitr::kable(data,
+             caption = "Data Nilai Pesanan Negara Nordic",
+             col.names = c("Order Number", "Country", "Total Value"))
+
+summary(data)
+```
+
+## Contoh Membuat Tabel Data Secara Manual
+<table>
+   <tr>
+      <th>Order Number</th>
+      <th>Country</th>
+      <th>Total Value</th>
+   </tr>
+   <tr>
+      <td>20001</td>
+      <td>Norway</td>
+      <td>50000</td>
+   </tr>
+   <tr>
+      <td>20002</td>
+      <td>Denmark</td>
+      <td>100000</td>
+   </tr>
+</table>
+
+# Analisis Data
+Laporan ini menyajikan analisis data untuk nilai pesanan dari negara-negara Nordic dari database *classicmodels*.
+
+## Menambahkan Gambar
+
+### Menambahkan Gambar dengan sintaks Markdown
+
+![Gambar 1. Peta Negara-Negara Nordic dengan sintaks Markdown](peta-nordic.jpg)
+
+
+### Menambahkan Gambar dengan tag HTML
+
+<figure>
+  <img src="peta-nordic.jpg" width="600px">
+  <figcaption>Gambar 2. Peta Negara-Negara Nordic dengan tag HTML</figcaption>
+</figure>
+
+## Visualisasi banyaknya item tiap product scale
+Kita menggunakan library `ggplot2` untuk membuat histogram. Fungsi `geom_histogram()` digunakan untuk melihat distribusi frekuensi nilai pesanan.
+
+```{r histogram}
+# Membuat histogram dari nilai pesanan
+
+ggplot(data, aes(x = total_value)) +
+  geom_histogram(aes(fill = after_stat(count)), 
+                 bins = 15, color='white') +
+  stat_bin(bins = 15, geom = "text", 
+           aes(label =after_stat(count)), vjust=-0.5)+
+  scale_fill_gradient(low='lightgreen', high = 'darkgreen')+
+  scale_x_continuous(labels = label_dollar())+
+  scale_y_continuous(expand = expansion(c(0,0.15)))+
+  theme_minimal() +
+  labs(title = "Distribusi Nilai Pesanan di negara Nordic",
+       subtitle = "Negara : Denmark, Finland, Norway, Sweden",
+       x = "Nilai Pesanan (USD)",
+       y = "Frekuensi") +
+  theme(legend.position = "none")
+```
+
+<h1> Referensi Cheat Sheet untuk Penggunaan CSS </h1>
+
+<p>🔗 <a href="https://htmlcheatsheet.com/css/">Referensi Cheatsheet CSS</a></p>
+
+
+```{r}
+install.packages('tinytex')
+tinytex::install_tinytex()
+```
+
+
+

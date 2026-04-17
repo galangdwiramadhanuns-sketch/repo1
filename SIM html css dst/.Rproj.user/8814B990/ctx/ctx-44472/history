@@ -1,0 +1,43 @@
+knitr::opts_chunk$set(echo = TRUE)
+con = dbConnect(odbc(),
+Driver = "MySQL ODBC 8.0 ANSI Driver",
+Server = "127.0.0.1",
+UID = "root",
+PWD = "21al09lang06MySQL",
+Port = 3306,
+database = "classicmodels")
+con = dbConnect(odbc(),
+Driver = "MySQL ODBC 8.0 ANSI Driver",
+Server = "127.0.0.1",
+UID = "root",
+PWD = "21gal09lang06MySQL",
+Port = 3306,
+database = "classicmodels")
+library(RMySQL)
+library(odbc)
+library(RMySQL)
+con = dbConnect(odbc(),
+Driver = "MySQL ODBC 8.0 ANSI Driver",
+Server = "127.0.0.1",
+UID = "root",
+PWD = "21gal09lang06MySQL",
+Port = 3306,
+database = "classicmodels")
+library(tinytex)
+---
+title: "SIM"
+library(tinytex)
+library(dplyr)
+library(dplyr)
+library(dplyr)
+library(dplyr)
+library(tinytex)
+# Jalankan ini untuk menginstal mesin utamanya
+tinytex::install_tinytex()
+# Jalankan ini untuk menginstal mesin utamanya
+tinytex::install_tinytex(repository = "illinois", version = "latest")
+knitr::opts_chunk$set(echo = TRUE)
+# Ganti 'C:/Downloads/TinyTeX.zip' sesuai lokasi file yang kamu download tadi
+tinytex:::install_prebuilt('C:/Users/User/Downloads/tinytex-releases-2026.04.zip')
+tinytex::is_tinytex()
+install.packages('tinytex')
