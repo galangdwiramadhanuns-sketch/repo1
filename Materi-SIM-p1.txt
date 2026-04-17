@@ -2,3 +2,4 @@ Materi SIM p1
 -Kontrak Kuliah
 -Pendahuluan
 -Review MK BD
+-nambah teks MK STatDAs
