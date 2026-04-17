@@ -3,3 +3,7 @@ Materi SIM p1
 -Pendahuluan
 -Review MK BD
 -nambah teks MK STatDAs
+Materi SIM p2:
+- Koneksi data dari sql ke r
+- pengenalan r-markdown
+-bebas ajagit 

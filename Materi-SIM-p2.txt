@@ -1,4 +1,0 @@
-Materi SIM p2:
-- Koneksi data dari sql ke r
-- pengenalan r-markdown
--bebas aja
